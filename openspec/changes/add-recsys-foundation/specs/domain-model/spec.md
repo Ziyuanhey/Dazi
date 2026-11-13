@@ -41,14 +41,22 @@
 - **THEN** 校验失败
 
 ### Requirement: 帖子状态流转
-搭子帖 SHALL 具有以下状态：`recruiting`（招募中）、`full`（已满）、`completed`（已成行）、`expired`（未凑齐人而过期）、`cancelled`（已取消）。只允许以下流转：`recruiting→full`、`full→recruiting`（有人退出）、`recruiting→expired`、`recruiting→cancelled`、`full→cancelled`、`full→completed`、`recruiting→completed`（人数已达成行下限）。`completed`、`expired`、`cancelled` 为终态。
+搭子帖 SHALL 具有以下状态：`recruiting`（招募中）、`full`（已满）、`ongoing`（进行中）、`completed`（已成行）、`expired`（未凑齐人而过期）、`cancelled`（已取消）。只允许以下流转：`recruiting→full`、`full→recruiting`（有人退出）、`recruiting→ongoing` 与 `full→ongoing`（开始时人数达到成行下限）、`recruiting→expired`、`recruiting→cancelled`、`full→cancelled`、`ongoing→completed`（活动结束）。`completed`、`expired`、`cancelled` 为终态；`ongoing` 不可取消。帖子进入过 `ongoing` 即视为成行。
 
 #### Scenario: 合法流转
 - **WHEN** 一个 `recruiting` 的帖子被申请满员
 - **THEN** 状态变为 `full`
 
+#### Scenario: 活动开始
+- **WHEN** 一个 `full` 的帖子到达活动开始时间
+- **THEN** 状态变为 `ongoing`
+
+#### Scenario: 活动结束
+- **WHEN** 一个 `ongoing` 的帖子到达活动结束时间
+- **THEN** 状态变为 `completed`
+
 #### Scenario: 非法流转
-- **WHEN** 尝试把 `completed` 的帖子改回 `recruiting`
+- **WHEN** 尝试把 `completed` 的帖子改回 `recruiting`，或把 `recruiting` 的帖子直接改为 `completed`，或取消一个 `ongoing` 的帖子
 - **THEN** 操作被拒绝并报错，帖子状态保持不变
 
 ### Requirement: 想去清单
